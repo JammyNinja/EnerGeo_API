@@ -64,7 +64,6 @@ deploy_run_image :
 #how to delete image
 # https://cloud.google.com/artifact-registry/docs/docker/manage-images#deleting_images
 
-
 setup_project:
 	pyenv virtualenv enerGeo_env
 	pyenv local enerGeo_env
