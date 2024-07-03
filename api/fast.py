@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI
 import pandas as pd
 
+from api.csv_test import exported #calling from makefile, must prefix with api.
 
 app = FastAPI()
 
@@ -36,6 +37,14 @@ def get_current_energy_production():
     # return output
     return data
 
+
+def format_df(df):
+    list_df = df.reset_index().to_dict(orient='records')
+
+    # for row in list_df:
+    return list_df
+
+
 @app.get('/csv_local')
 def query_local_csv(year=None):
     filename = "df_fuel_ckan.csv"
@@ -54,11 +63,22 @@ def query_local_csv(year=None):
     #sum over the years
     year_df = df.groupby(by=df["DATETIME"].dt.year)[sources_list].sum()
 
-    # print(year_df[sources_list])
-    out = year_df.to_dict(orient='index')
+    #rename the index
+    year_df.index.names = ["Year"]
+    print(year_df)
 
-    if year:
-        out = out[int(year)]
+    out = year_df.reset_index().to_dict(orient='records')
+
+    # if year:
+    #     out = out[int(year)]
 
     print(type(out))
     return out
+
+@app.get('/test_package')
+def imported_func():
+    out = exported()
+    return out
+
+if __name__ == "__main__":
+    exported()
