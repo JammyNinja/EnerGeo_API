@@ -1,3 +1,4 @@
+import requests
 import json
 import os
 from fastapi import FastAPI
@@ -55,10 +56,31 @@ def query_local_csv(year=None):
     year_df = df.groupby(by=df["DATETIME"].dt.year)[sources_list].sum()
 
     # print(year_df[sources_list])
-    out = year_df.to_dict(orient='index')
+    out = year_df.reset_index().to_dict(orient='records')
 
-    if year:
-        out = out[int(year)]
+    # if year:
+    #     out = out[int(year)]
 
     print(type(out))
     return out
+
+@app.get('/elexon_api')
+def query_elexon_api():
+    url = "https://data.elexon.co.uk/bmrs/api/v1/generation/actual/per-type/day-total?format=json"
+    response = requests.get(url).json()
+
+    l30_min = []
+    l24_hrs = []
+
+    for energy_type in response:
+        l30_min.append({
+            "type": energy_type['psrType'].upper(),
+            "measure": energy_type['halfHourUsage']
+        })
+
+        l24_hrs.append({
+            "type": energy_type['psrType'].upper(),
+            "measure": energy_type['twentyFourHourUsage']
+        })
+
+    return [{"30_min": l30_min, "24_hours": l24_hrs}]
