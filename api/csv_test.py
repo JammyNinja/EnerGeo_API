@@ -32,5 +32,8 @@ def testing():
 
     return out
 
+def exported():
+    return "hello from export"
+
 if __name__ == "__main__":
     testing()
