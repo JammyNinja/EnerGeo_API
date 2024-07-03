@@ -5,7 +5,8 @@ build_docker_image_live :
 	docker build -t $(GCP_REGION)-docker.pkg.dev/$(GCP_PROJECT_ID)/$(DOCKER_REPO_NAME)/$(DOCKER_IMAGE_NAME):$(VERSION) .
 
 run_api_local_test :
-	uvicorn api.fast:app --host 0.0.0.0 --port $(MY_PORT) --reload
+	@echo Doce link here: http://localhost:$(MY_PORT)/docs
+	uvicorn api.fast:app --port $(MY_PORT) --reload
 
 docker_run_interactive :
 	docker run -it --env-file .env energy:$(DOCKER_TAG) sh
@@ -62,3 +63,14 @@ deploy_run_image :
 # https://cloud.google.com/run/docs/managing/services#delete
 #how to delete image
 # https://cloud.google.com/artifact-registry/docs/docker/manage-images#deleting_images
+
+
+setup_project:
+	pyenv virtualenv enerGeo_env
+	pyenv local enerGeo_env
+	pip install --upgrade pip
+	pip install -r requirements.txt
+
+refresh_requirements:
+	pip freeze | xargs pip uninstall -y
+	pip install -r requirements.txt
