@@ -5,3 +5,4 @@
 *.txt
 #but not the requirements
 !requirements.txt
+!requirements_prod.txt
