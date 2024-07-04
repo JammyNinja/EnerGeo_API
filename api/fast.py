@@ -11,7 +11,7 @@ app = FastAPI()
 # Define a root `/` endpoint
 @app.get('/')
 def index():
-    return {'ok': True, 'test' : "tested"}
+    return {'ok': True, "docs" : "/docs"}
 
 @app.get('/test')
 def get_current_energy_production():
@@ -39,14 +39,14 @@ def get_current_energy_production():
     return data
 
 
-def format_df(df):
-    list_df = df.reset_index().to_dict(orient='records')
+# def format_df(df):
+#     list_df = df.reset_index().to_dict(orient='records')
 
-    # for row in list_df:
-    return list_df
+#     # for row in list_df:
+#     return list_df
 
 
-@app.get('/csv_local')
+@app.get('/historical')
 def query_local_csv(year=None):
     filename = "df_fuel_ckan.csv"
     this_folder = os.path.dirname(__file__)
@@ -76,12 +76,7 @@ def query_local_csv(year=None):
     print(type(out))
     return out
 
-@app.get('/test_package')
-def imported_func():
-    out = exported()
-    return out
-
-@app.get('/elexon_api')
+@app.get('/current')
 def query_elexon_api():
     url = "https://data.elexon.co.uk/bmrs/api/v1/generation/actual/per-type/day-total?format=json"
     response = requests.get(url).json()
@@ -103,6 +98,10 @@ def query_elexon_api():
     return [{"30_min": l30_min, "24_hours": l24_hrs}]
 
 
+@app.get('/test_package')
+def imported_func():
+    out = exported()
+    return out
 
 if __name__ == "__main__":
     exported()
