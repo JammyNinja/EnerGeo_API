@@ -2,11 +2,30 @@ import requests
 import json
 import os
 from fastapi import FastAPI
+
+
+
 import pandas as pd
 
-from api.csv_test import exported #calling from makefile, must prefix with api.
+# from api.csv_test import exported #calling from makefile, must prefix with api.
+
+#geo
+import geopandas as gpd
+#use matplotlib backend, no need for display
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 app = FastAPI()
+
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    # allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Define a root `/` endpoint
 @app.get('/')
@@ -37,14 +56,6 @@ def get_current_energy_production():
 
     # return output
     return data
-
-
-# def format_df(df):
-#     list_df = df.reset_index().to_dict(orient='records')
-
-#     # for row in list_df:
-#     return list_df
-
 
 @app.get('/historical')
 def query_local_csv(year=None):
@@ -98,10 +109,85 @@ def query_elexon_api():
     return [{"30_min": l30_min, "24_hours": l24_hrs}]
 
 
-@app.get('/test_package')
-def imported_func():
-    out = exported()
-    return out
+# @app.get('/test_package')
+# def imported_func():
+#     out = exported()
+#     return out
+
+def get_live_regional_data():
+    url = "https://api.carbonintensity.org.uk/regional"
+    response = requests.get(url).json()
+
+    print(type(response))
+
+def regional_response_to_df(response_regional):
+    regions = response_regional['data'][0]['regions']
+
+    rows = []
+    for region in regions:
+        region_id = region["regionid"]
+        dno_region = region["dnoregion"]
+        name = region["shortname"]
+        intensity_forecast = region["intensity"]["forecast"]
+        intensity_index = region["intensity"]["index"]
+
+        row_dict = {
+            "id" : region_id,
+            "dno_region" : dno_region,
+            "name" : name,
+            "intensity_forecast" : intensity_forecast,
+            "intensity_index" : intensity_index
+        }
+
+        for fuel in region["generationmix"]:
+            fuel_name = fuel["fuel"]
+            fuel_percentage = fuel["perc"]
+            row_dict[fuel_name+"_perc"] = fuel_percentage
+
+        rows.append(row_dict)
+
+    return pd.DataFrame(rows)
+
+@app.get('/test_geo')
+def geo_test():
+    print("geo testing")
+    filename = "dno_regions.geojson"
+    this_folder = os.path.dirname(__file__)
+    path_to_data = os.path.join(this_folder, "..", "data")
+    filepath = os.path.join(path_to_data, filename)
+
+    # Read the GeoJSON file
+    uk_regions = gpd.read_file(filepath)
+    print("file has been read")
+
+    live_data = get_live_regional_data()
+
+    # Create a figure and axis
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    print("plotting map")
+    # Plot the map
+    uk_regions.plot(ax=ax)
+
+    # Remove axis
+    ax.axis('off')
+
+    # Add a title
+    plt.title('UK Regions')
+
+    out_filename = "out_test.png"
+    out_path = os.path.join(path_to_data, "output", out_filename )
+    print("saving file")
+    # Save the map as an image
+    plt.savefig(out_path, dpi=300, bbox_inches='tight')
+
+    # Display the map (optional)
+    # plt.show()
+
+
+
 
 if __name__ == "__main__":
-    exported()
+    # exported()
+    # geo_test()
+    get_live_regional_data()

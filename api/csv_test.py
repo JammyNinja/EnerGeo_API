@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import requests
 
 def testing():
     """contains breakpoint!
@@ -32,8 +33,16 @@ def testing():
 
     return out
 
+def test_live_api():
+    url="https://live-json-first-y2qdisfueq-ew.a.run.app/current"
+    response = requests.get(url).json()
+
+    print (response)
+
+
 def exported():
     return "hello from export"
 
 if __name__ == "__main__":
-    testing()
+    # testing()
+    test_live_api()
