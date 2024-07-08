@@ -4,8 +4,8 @@ import os
 from fastapi import FastAPI
 import pandas as pd
 
-from api.csv_test import exported #calling from makefile, must prefix with api.
-
+# from api.csv_test import exported #calling from makefile, must prefix with api.
+from api.current import get_current_data_as_elements
 app = FastAPI()
 
 # Define a root `/` endpoint
@@ -38,14 +38,6 @@ def get_current_energy_production():
     # return output
     return data
 
-
-# def format_df(df):
-#     list_df = df.reset_index().to_dict(orient='records')
-
-#     # for row in list_df:
-#     return list_df
-
-
 @app.get('/historical')
 def query_local_csv(year=None):
     filename = "df_fuel_ckan.csv"
@@ -76,11 +68,20 @@ def query_local_csv(year=None):
     print(type(out))
     return out
 
-@app.get('/current')
+@app.get('/current/old')
 def query_elexon_api():
     url = "https://data.elexon.co.uk/bmrs/api/v1/generation/actual/per-type/day-total?format=json"
     response = requests.get(url).json()
 
+    # save locally if desired
+    # filename = "cached_live_response.json"
+    # this_folder = os.path.dirname(__file__)
+    # path_to_data = os.path.join(this_folder, "..", "data")
+    # filepath = os.path.join(path_to_data, filename)
+    # with open(filepath, 'w') as file_cache_out:
+    #     json.dump(response, file_cache_out)
+
+    print(type(response))
     l30_min = []
     l24_hrs = []
 
@@ -97,11 +98,32 @@ def query_elexon_api():
 
     return [{"30_min": l30_min, "24_hours": l24_hrs}]
 
+@app.get('/current')
+def get_current():
+    """
+    query the elexon API
+    returns dictionary specially formatted for front-end display
+    """
+    url = "https://data.elexon.co.uk/bmrs/api/v1/generation/actual/per-type/day-total?format=json"
+    response = requests.get(url).json()
+    dict_out = get_current_data_as_elements(response)
+    return dict_out
 
-@app.get('/test_package')
-def imported_func():
-    out = exported()
-    return out
+def cache_locally():
+    """code to save locally, untested for compatibility with other functions"""
+    # filename = "cache_live_response.json"
+    # this_folder = os.path.dirname(__file__)
+    # path_to_data = os.path.join(this_folder, "..", "data")
+    # filepath = os.path.join(path_to_data, filename)
+    # # with open(filepath, 'w') as file_cache_out:
+    # #     json.dump(response, file_cache_out)
+    # with open(filepath, 'r') as file_cache_in:
+    #     response = json.load(file_cache_in)
+    #     print(response)
+
+    return None
 
 if __name__ == "__main__":
-    exported()
+    # exported()
+    # query_elexon_api()
+    print(get_current())
