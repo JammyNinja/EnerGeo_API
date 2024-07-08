@@ -8,6 +8,16 @@ from api.csv_test import exported #calling from makefile, must prefix with api.
 
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    # allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 # Define a root `/` endpoint
 @app.get('/')
 def index():

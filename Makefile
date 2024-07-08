@@ -20,25 +20,25 @@ stop_running_containers:
 run_cmd :
 	uvicorn api.fast:app --host 0.0.0.0 --port $(PORT)
 
-#	create repo
+#	0 - create repo
 deploy_create_repo :
 	gcloud artifacts repositories create $(DOCKER_REPO_NAME) --repository-format=docker --location=$(GCP_REGION) --description=$(DOCKER_REPO_DESCRIPTION) --project=$(GCP_PROJECT_ID)
 # gcloud artifacts repositories create $DOCKER_REPO_NAME --repository-format=docker --location=$GCP_REGION --description="$DOCKER_REPO_DESCRIPTION" --project=$GCP_PROJECT_ID
 
-# build image for that repo
+# 1 - build image for that repo
 deploy_build_image :
 	docker build -t $(IMAGE_URI) .
 
-# test it first
+# 2 - test it first
 deploy_test_image :
 	@echo "http://127.0.0.1:$(MY_PORT)/test to test"
 	docker run -it --env-file .env -p $(MY_PORT):$(PORT) $(IMAGE_URI)
 
-# push that image onto the repo
+# 3 - push that image onto the repo (image name contains repo)
 deploy_push_image :
 	docker push $(IMAGE_URI)
 
-# make google serve it
+# 4 - make google serve it
 deploy_run_image :
 	gcloud run deploy --image $(IMAGE_URI) --region $(GCP_REGION)
 
