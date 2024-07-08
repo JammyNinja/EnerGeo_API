@@ -9,6 +9,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY api api
 COPY data/test_current.json data/test_current.json
 COPY data/df_fuel_ckan.csv data/df_fuel_ckan.csv
+COPY data/geo/uk_dno_regions_2024.geojson data/geo/uk_dno_regions_2024.geojson
 
 #install make as slim version doesn't come with it
 RUN apt-get update && apt-get install make
