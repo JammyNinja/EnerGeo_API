@@ -134,7 +134,7 @@ def regional_response_to_df(response_regional):
         row_dict = {
             "id" : region_id,
             "dno_region" : dno_region,
-            "name" : name,
+            "api_name" : name,
             "intensity_forecast" : intensity_forecast,
             "intensity_index" : intensity_index
         }
@@ -151,7 +151,8 @@ def regional_response_to_df(response_regional):
 @app.get('/test_geo')
 def geo_test():
     print("geo testing")
-    filename = "dno_regions.geojson"
+    # filename = "dno_regions.geojson"
+    filename= "national_grid_dno_regions_2024.geojson"
     this_folder = os.path.dirname(__file__)
     path_to_data = os.path.join(this_folder, "..", "data")
     filepath = os.path.join(path_to_data, filename)
@@ -160,7 +161,7 @@ def geo_test():
     uk_regions = gpd.read_file(filepath)
     print("file has been read")
 
-    live_data = get_live_regional_data()
+    # live_data = get_live_regional_data()
 
     # Create a figure and axis
     fig, ax = plt.subplots(figsize=(10, 10))
@@ -175,7 +176,7 @@ def geo_test():
     # Add a title
     plt.title('UK Regions')
 
-    out_filename = "out_test.png"
+    out_filename = "out_test_2024.png"
     out_path = os.path.join(path_to_data, "output", out_filename )
     print("saving file")
     # Save the map as an image
@@ -189,5 +190,5 @@ def geo_test():
 
 if __name__ == "__main__":
     # exported()
-    # geo_test()
-    get_live_regional_data()
+    geo_test()
+    # get_live_regional_data()
