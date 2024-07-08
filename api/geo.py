@@ -13,6 +13,7 @@ path_to_geodata = os.path.join(os.path.dirname(__file__), "..", "data", "geo")
 
 def get_api_regional_response():
     url = "https://api.carbonintensity.org.uk/regional"
+    print("Making API call to: ", url)
     response = requests.get(url).json()
     regions = response['data'][0]['regions']
     return regions
