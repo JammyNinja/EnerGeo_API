@@ -1,24 +1,15 @@
 import requests
 import json
 import os
-from fastapi import FastAPI
-
-
-
 import pandas as pd
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse #returning regional image
 
-# from api.csv_test import exported #calling from makefile, must prefix with api.
-
-#geo
-import geopandas as gpd
-#use matplotlib backend, no need for display
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+from api.geo import geo_test_file
 
 app = FastAPI()
 
-from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -108,87 +99,11 @@ def query_elexon_api():
 
     return [{"30_min": l30_min, "24_hours": l24_hrs}]
 
-
-# @app.get('/test_package')
-# def imported_func():
-#     out = exported()
-#     return out
-
-def get_live_regional_data():
-    url = "https://api.carbonintensity.org.uk/regional"
-    response = requests.get(url).json()
-
-    print(type(response))
-
-def regional_response_to_df(response_regional):
-    regions = response_regional['data'][0]['regions']
-
-    rows = []
-    for region in regions:
-        region_id = region["regionid"]
-        dno_region = region["dnoregion"]
-        name = region["shortname"]
-        intensity_forecast = region["intensity"]["forecast"]
-        intensity_index = region["intensity"]["index"]
-
-        row_dict = {
-            "id" : region_id,
-            "dno_region" : dno_region,
-            "api_name" : name,
-            "intensity_forecast" : intensity_forecast,
-            "intensity_index" : intensity_index
-        }
-
-        for fuel in region["generationmix"]:
-            fuel_name = fuel["fuel"]
-            fuel_percentage = fuel["perc"]
-            row_dict[fuel_name+"_perc"] = fuel_percentage
-
-        rows.append(row_dict)
-
-    return pd.DataFrame(rows)
-
-@app.get('/test_geo')
-def geo_test():
-    print("geo testing")
-    # filename = "dno_regions.geojson"
-    filename= "national_grid_dno_regions_2024.geojson"
-    this_folder = os.path.dirname(__file__)
-    path_to_data = os.path.join(this_folder, "..", "data")
-    filepath = os.path.join(path_to_data, filename)
-
-    # Read the GeoJSON file
-    uk_regions = gpd.read_file(filepath)
-    print("file has been read")
-
-    # live_data = get_live_regional_data()
-
-    # Create a figure and axis
-    fig, ax = plt.subplots(figsize=(10, 10))
-
-    print("plotting map")
-    # Plot the map
-    uk_regions.plot(ax=ax)
-
-    # Remove axis
-    ax.axis('off')
-
-    # Add a title
-    plt.title('UK Regions')
-
-    out_filename = "out_test_2024.png"
-    out_path = os.path.join(path_to_data, "output", out_filename )
-    print("saving file")
-    # Save the map as an image
-    plt.savefig(out_path, dpi=300, bbox_inches='tight')
-
-    # Display the map (optional)
-    # plt.show()
-
-
-
+@app.get('/geo_test')
+async def geo_test():
+    geo_filepath = geo_test_file()
+    return FileResponse(geo_filepath)
 
 if __name__ == "__main__":
-    # exported()
-    geo_test()
-    # get_live_regional_data()
+    # geo_test()
+    pass
