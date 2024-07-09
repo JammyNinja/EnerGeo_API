@@ -1,11 +1,14 @@
 import requests
 import json
 import os
-from fastapi import FastAPI
 import pandas as pd
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse #returning regional image
 
-# from api.csv_test import exported #calling from makefile, must prefix with api.
+from api.geo import geo_test_file
 from api.current import get_current_data_as_elements
+
 app = FastAPI()
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,7 +19,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # Define a root `/` endpoint
 @app.get('/')
@@ -83,15 +85,6 @@ def query_elexon_api():
     url = "https://data.elexon.co.uk/bmrs/api/v1/generation/actual/per-type/day-total?format=json"
     response = requests.get(url).json()
 
-    # save locally if desired
-    # filename = "cached_live_response.json"
-    # this_folder = os.path.dirname(__file__)
-    # path_to_data = os.path.join(this_folder, "..", "data")
-    # filepath = os.path.join(path_to_data, filename)
-    # with open(filepath, 'w') as file_cache_out:
-    #     json.dump(response, file_cache_out)
-
-    print(type(response))
     l30_min = []
     l24_hrs = []
 
@@ -132,8 +125,14 @@ def cache_locally():
     #     print(response)
 
     return None
+  
+@app.get('/geo_test')
+async def geo_test():
+    geo_filepath = geo_test_file()
+    return FileResponse(geo_filepath)
 
 if __name__ == "__main__":
     # exported()
     # query_elexon_api()
-    print(get_current())
+    # geo_test()
+    # print(get_current())

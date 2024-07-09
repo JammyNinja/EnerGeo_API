@@ -6,3 +6,6 @@
 #but not the requirements
 !requirements.txt
 !requirements_prod.txt
+notebooks/
+data/output
+*Zone.Identifier
