@@ -22,8 +22,7 @@ run_cmd :
 
 #	0 - create repo
 deploy_create_repo :
-	gcloud artifacts repositories create $(DOCKER_REPO_NAME) --repository-format=docker --location=$(GCP_REGION) --description=$(DOCKER_REPO_DESCRIPTION) --project=$(GCP_PROJECT_ID)
-# gcloud artifacts repositories create $DOCKER_REPO_NAME --repository-format=docker --location=$GCP_REGION --description="$DOCKER_REPO_DESCRIPTION" --project=$GCP_PROJECT_ID
+	gcloud artifacts repositories create $(DOCKER_REPO_NAME) --repository-format=docker --location=$(GCP_REGION) --description="$(DOCKER_REPO_DESCRIPTION)" --project=$(GCP_PROJECT_ID)
 
 # 1 - build image for that repo
 deploy_build_image :
@@ -31,7 +30,7 @@ deploy_build_image :
 
 # 2 - test it first
 deploy_test_image :
-	@echo "http://127.0.0.1:$(MY_PORT)/test to test"
+	@echo "http://localhost:$(MY_PORT)/docs try the endpoints to test"
 	docker run -it --env-file .env -p $(MY_PORT):$(PORT) $(IMAGE_URI)
 
 # 3 - push that image onto the repo (image name contains repo)
