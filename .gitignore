@@ -9,3 +9,4 @@
 notebooks/
 data/output
 *Zone.Identifier
+.ipynb_checkpoints
