@@ -10,3 +10,6 @@ notebooks/
 data/output
 *Zone.Identifier
 .ipynb_checkpoints
+data/geo/*.png
+data/*.json
+data/*.geojson
