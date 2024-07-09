@@ -1,15 +1,20 @@
-*.csv
+#metadata
 */__pycache__/*
+*Zone.Identifier
+.ipynb_checkpoints
 
 #ignore text files
 *.txt
 #but not the requirements
 !requirements.txt
 !requirements_prod.txt
-notebooks/
+
+#data folder
 data/output
-*Zone.Identifier
-.ipynb_checkpoints
 data/geo/*.png
 data/*.json
-data/*.geojson
+data/geo/*.geojson
+*.csv
+
+#will remove on another branch
+notebooks/
