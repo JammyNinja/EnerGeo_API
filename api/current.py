@@ -2,23 +2,7 @@ import pandas as pd
 from datetime import datetime
 import pytz #for timezones
 
-#define constants
-four_elements = ["fire","air", "water", "earth"]
-element_mappings = {
-    "BIOMASS" : "fire",
-    "FOSSIL OIL" : "earth", # fire
-    "FOSSIL HARD COAL" : "earth", #fire
-    "FOSSIL GAS" : "earth", #fire
-
-    "NUCLEAR" : "fire", #earth
-    "SOLAR" : "fire", # earth
-
-    "HYDRO PUMPED STORAGE" : "water",
-    "HYDRO RUN-OF-RIVER AND POUNDAGE" : "water",
-
-    "WIND ONSHORE" : "air",
-    "WIND OFFSHORE" : "air",
-}
+from api.elements import elements_list, element_mappings
 
 def response_to_df(response):
     """ convert API response to dataframe"""
@@ -72,7 +56,7 @@ def build_output_dict(response_df):
     total_df = response_df.groupby("element").sum()
 
     elements_dicts_out = {} # -> four key/value pairs
-    for element in four_elements:
+    for element in elements_list:
         #each element will include its list of energy sources
         sources_list = []
         for source in response_df.query(f"element == '{element}'").to_dict(orient="records"):
