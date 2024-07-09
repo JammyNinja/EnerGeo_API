@@ -6,19 +6,23 @@ import pytz #for timezones
 four_elements = ["fire","air", "water", "earth"]
 element_mappings = {
     "BIOMASS" : "fire",
-    "NUCLEAR" : "fire",
-    "SOLAR" : "fire",
-    "FOSSIL OIL" : "earth",
-    "FOSSIL HARD COAL" : "earth",
-    "FOSSIL GAS" : "earth",
+    "FOSSIL OIL" : "earth", # fire
+    "FOSSIL HARD COAL" : "earth", #fire
+    "FOSSIL GAS" : "earth", #fire
+
+    "NUCLEAR" : "fire", #earth
+    "SOLAR" : "fire", # earth
+
     "HYDRO PUMPED STORAGE" : "water",
     "HYDRO RUN-OF-RIVER AND POUNDAGE" : "water",
+
     "WIND ONSHORE" : "air",
     "WIND OFFSHORE" : "air",
 }
 
 def response_to_df(response):
     """ convert API response to dataframe"""
+    print("converting api data to dataframe")
     rows = []
     for energy in response:
         energy_name = energy["psrType"]
@@ -54,6 +58,7 @@ def build_output_dict(response_df):
     """
         Get data in desired output format
     """
+    print("arranging data in desired front-end format")
     out_dict = {}
     #add timestamp
     out_dict["timestamp"] = get_current_uk_time()

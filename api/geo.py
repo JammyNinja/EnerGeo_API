@@ -13,7 +13,7 @@ path_to_geodata = os.path.join(os.path.dirname(__file__), "..", "data", "geo")
 
 def get_api_regional_response():
     url = "https://api.carbonintensity.org.uk/regional"
-    print("Making API call to: ", url)
+    print("Getting current regional carbon intensity from: ", url)
     response = requests.get(url).json()
     regions = response['data'][0]['regions']
     return regions
@@ -25,7 +25,7 @@ def regional_response_to_df(regions):
        'biomass_perc', 'coal_perc', 'imports_perc', 'gas_perc', 'nuclear_perc',
        'other_perc', 'hydro_perc', 'solar_perc', 'wind_perc'
     """
-
+    print("converting api response to dataframe...")
     rows = []
     for region in regions:
         region_id = region["regionid"]
@@ -48,13 +48,14 @@ def regional_response_to_df(regions):
             row_dict[fuel_name+"_perc"] = fuel_percentage
 
         rows.append(row_dict)
-
+    
     return pd.DataFrame(rows)
 
 def get_api_regions_as_df():
     """
         Orchestrates the API call and coversion to df functions
     """
+
     regions = get_api_regional_response()
     regions_df = regional_response_to_df(regions)
     return regions_df
@@ -103,6 +104,8 @@ def carbon_intensity_live_geodf():
     #firstly get the geopandas with regions, to be completed with live data
     geojson_filename = "uk_dno_regions_2024.geojson"
     filepath = os.path.join(path_to_geodata, geojson_filename)
+
+    print("loading uk energy regions from file", filepath)
     uk_regions = gpd.read_file(filepath)
 
     #get the live data
@@ -113,6 +116,11 @@ def carbon_intensity_live_geodf():
     #merge them on their respective id columns
     return uk_regions.merge(uk_live_df, how="inner", left_on="ID", right_on="id").drop(columns=cols_to_drop)
 
+def carbon_intensity_live_geodict():
+
+    geodf = carbon_intensity_live_geodf()
+    print("returning as geodict")
+    return geodf.to_geo_dict(drop_id=True)
 
 def geo_plot_matplotlib_save_local(filename_out = "carbon_intensity_regional.png"):
     """
