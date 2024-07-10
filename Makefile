@@ -1,17 +1,18 @@
-build_docker_image_local :
+build_docker_local_image :
 	docker build -t energy:$(DOCKER_LOCAL_TAG) .
 
-run_api_local_test :
+run_api_uvicorn :
 	@echo Docs link here: http://localhost:$(MY_PORT)/docs
 	uvicorn api.fast:app --port $(MY_PORT) --reload
 
-docker_run_interactive :
-	docker run -it --env-file .env energy:$(DOCKER_LOCAL_TAG) sh
-
 #laptop_port : container_port
-run_api_from_container :
+run_api_docker :
+	@echo running from local docker image
 	@echo "open http://localhost:$(MY_PORT)/ in browser to see"
 	docker run -it --env-file .env -p $(MY_PORT):$(PORT) energy:$(DOCKER_LOCAL_TAG)
+
+docker_local_shell :
+	docker run -it --env-file .env -p energy:$(DOCKER_LOCAL_TAG) sh
 
 stop_running_containers:
 	docker ps -a -q | xargs -r docker stop | xargs -r docker rm

@@ -28,29 +28,6 @@ path_to_data = os.path.join(this_folder, "..", "data")
 def index():
     return {'ok': True, "docs to see endpoints" : "/docs"}
 
-@app.get('/test')
-def get_current_energy_production():
-    """
-        note that plurality may matter eg .loads() vs load() / dump(s)
-    """
-
-    filename = "test_current.json"
-    filepath = os.path.join(path_to_data, filename)
-
-    #load json from file
-    with open(filepath) as file:
-        data = json.load(file)
-        print(data)
-
-    test_var = {"test" : "TEST"}
-    data.append(test_var)
-
-    output = json.dumps(data)
-    print(type(output))
-
-    # return output
-    return data
-
 @app.get('/current')
 def get_current():
     """
@@ -73,13 +50,13 @@ def get_current():
 def get_historical():
     return get_historical_output()
 
-@app.get('/geo/static_image')
+@app.get('/geo/image_static')
 async def geo_test():
     geo_filepath = geo_test_file()
     print("serving regional carbon intensity data from local", geo_filepath)
     return FileResponse(geo_filepath)
 
-@app.get('/geo/intensity_geodict')
+@app.get('/geo/carbon_intensity_geojson')
 def geo_carbon_as_geo_dict():
     return carbon_intensity_live_geodict()
 
@@ -95,74 +72,6 @@ def cache_locally():
     #     response = json.load(file_cache_in)
     #     print(response)
     return None
-
-
-@app.get('/historical/old')
-def query_local_csv(year=None):
-    filename = "df_fuel_ckan.csv"
-    filepath = os.path.join(path_to_data, filename)
-
-    df = pd.read_csv(filepath)
-
-    print("columns", df.columns)
-
-    sources_list = ['GAS', 'COAL', 'NUCLEAR', 'WIND', 'HYDRO','SOLAR','BIOMASS',  'IMPORTS', 'OTHER', ]
-    #convert to datetime for groupby
-    df['DATETIME'] = pd.to_datetime(df.DATETIME)
-
-    element_mappings = {
-        "BIOMASS" : "fire",
-        "FOSSIL OIL" : "earth", # fire
-        "FOSSIL HARD COAL" : "earth", #fire
-        "FOSSIL GAS" : "earth", #fire
-
-        "NUCLEAR" : "fire", #earth
-        "SOLAR" : "fire", # earth
-
-        "HYDRO PUMPED STORAGE" : "water",
-        "HYDRO RUN-OF-RIVER AND POUNDAGE" : "water",
-
-        "WIND ONSHORE" : "air",
-        "WIND OFFSHORE" : "air",
-}
-
-    #sum over the years
-    year_df = df.groupby(by=df["DATETIME"].dt.year)[sources_list].sum()
-
-    #rename the index
-    year_df.index.names = ["Year"]
-    print(year_df)
-
-    out = year_df.reset_index().to_dict(orient='records')
-
-    # if year:
-    #     out = out[int(year)]
-
-    print(type(out))
-    return out
-
-@app.get('/current/old')
-def query_elexon_api():
-    url = "https://data.elexon.co.uk/bmrs/api/v1/generation/actual/per-type/day-total?format=json"
-    response = requests.get(url).json()
-
-    l30_min = []
-    l24_hrs = []
-
-    for energy_type in response:
-        l30_min.append({
-            "type": energy_type['psrType'].upper(),
-            "measure": energy_type['halfHourUsage']
-        })
-
-        l24_hrs.append({
-            "type": energy_type['psrType'].upper(),
-            "measure": energy_type['twentyFourHourUsage']
-        })
-
-    return [{"30_min": l30_min, "24_hours": l24_hrs}]
-
-
 
 if __name__ == "__main__":
     # exported()

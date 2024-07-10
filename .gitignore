@@ -10,9 +10,8 @@
 !requirements_prod.txt
 
 #data folder
-data/output
-data/geo/*.png
-data/*.json
-data/geo/*.geojson
-*.csv
-
+data
+data/*
+!data/geo
+data/geo/*
+!data/geo/uk_dno_regions_2024_lonlat.geojson
