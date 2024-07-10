@@ -10,15 +10,16 @@ import matplotlib.pyplot as plt
 
 url = "https://api.carbonintensity.org.uk/regional"
 path_to_geodata = os.path.join(os.path.dirname(__file__), "..", "data", "geo")
+geo_file_prod = "uk_dno_regions_2024_lonlat.geojson"
 
-def get_api_regional_response():
-    url = "https://api.carbonintensity.org.uk/regional"
-    print("Getting current regional carbon intensity from: ", url)
-    response = requests.get(url).json()
+def get_api_carbon_regional_response():
+    carbon_url = "https://api.carbonintensity.org.uk/regional"
+    print("Getting current regional carbon intensity from: ", carbon_url)
+    response = requests.get(carbon_url).json()
     regions = response['data'][0]['regions']
     return regions
 
-def regional_response_to_df(regions):
+def carbon_regional_response_to_df(regions):
     """
         parse API response into desired df, with columns:
         'id', 'dno_region', 'api_name', 'intensity_forecast', 'intensity_index',
@@ -48,24 +49,35 @@ def regional_response_to_df(regions):
             row_dict[fuel_name+"_perc"] = fuel_percentage
 
         rows.append(row_dict)
-    
+
     return pd.DataFrame(rows)
 
-def get_api_regions_as_df():
+def get_api_carbon_regions_as_df():
     """
         Orchestrates the API call and coversion to df functions
     """
 
-    regions = get_api_regional_response()
-    regions_df = regional_response_to_df(regions)
+    regions = get_api_carbon_regional_response()
+    regions_df = carbon_regional_response_to_df(regions)
     return regions_df
 
+def convert_geodf_to_lonlat(geodf, lonlat_EPSG = 4326):
+    """ projects the co-ordinates to lonlat
+        GeoPandas projections
+        https://geopandas.org/en/stable/docs/user_guide/projections.html
+    """
+    print("Co-ordinate Reference System before: ", geodf.crs)
+    geodf_lonlat = geodf.to_crs(epsg=lonlat_EPSG)
+    print("Co-ordinate Reference System after: ", geodf_lonlat.crs)
+    return geodf_lonlat
+
 #used to programmatically map geojson region_ids to API region ids
-def process_local_geojson(filename_in = "national_grid_dno_regions_2024.geojson", filename_out="uk_dno_regions_2024.geojson"):
+def process_local_geojson(filename_out, filename_in = "national_grid_dno_regions_2024.geojson"):
     """
         rename the IDs from downloaded geojson file with IDs as served by API
         only needs to be run once...
     """
+    # filename_out = geo_file_prod
     filepath_in = os.path.join(path_to_geodata, filename_in)
     filepath_out = os.path.join(path_to_geodata, filename_out)
     print(f"processing file: {filepath_in}")
@@ -78,7 +90,7 @@ def process_local_geojson(filename_in = "national_grid_dno_regions_2024.geojson"
     uk_regions_2024["Area"] = uk_regions_2024["Area"].map(lambda x: rename_geojson_areas_to_api.get(x,x) )
 
     #get sample api response to lineup the ids
-    region_response_df = get_api_regions_as_df()
+    region_response_df = get_api_carbon_regions_as_df()
 
     #line up the ids from file + api
     lineup_file_df = uk_regions_2024.sort_values(by="Area").rename(columns={"ID" : "geojson_id", "Area" : "geojson_name"}).reset_index(drop=True)
@@ -86,30 +98,34 @@ def process_local_geojson(filename_in = "national_grid_dno_regions_2024.geojson"
     lineup_df = pd.concat([lineup_file_df,lineup_api_df], axis=1)[["geojson_id","api_id", "geojson_name", "api_name"]]
     #create id mapping dict thanks to lineup_df
     id_map_dict = {}
-    for geo_id, api_id,api_name in zip(lineup_df.geojson_id, lineup_df.api_id,lineup_df.api_name):
-        print(f"Region: {api_name}. Geojson id: {geo_id} -> Api_id: {api_id}" )
+    for geo_id, geo_name, api_id,api_name in zip(lineup_df.geojson_id, lineup_df.geojson_name, lineup_df.api_id,lineup_df.api_name):
+        print(f"Geo name | Api name: {geo_name} | {api_name} - Geojson id | Api id: {geo_id} -> {api_id}" )
         id_map_dict[geo_id] = [api_id, api_name]
 
     #execute the mapping of IDs
     uk_regions_2024["ID"] = uk_regions_2024["ID"].map(lambda id : id_map_dict[id][0])
 
-    #sort by ID before save, for sanity
-    uk_regions_2024 = uk_regions_2024.sort_values(by="ID")
+    #rename Area -> Region and sort by ID
+    uk_regions_2024 = uk_regions_2024.sort_values(by="ID").rename(columns={"Area" : "Region"})
+
+    #convert co-ordinates to longitude and latitude
+    print("Converting co-ordinates to longitude latitude projection")
+    uk_regions_2024_lonlat = convert_geodf_to_lonlat(uk_regions_2024)
 
     print(f"saving processed file to: {filepath_out}")
-    uk_regions_2024.to_file(filepath_out)
-    return uk_regions_2024
+    uk_regions_2024_lonlat.to_file(filepath_out)
+    return uk_regions_2024_lonlat
 
 def carbon_intensity_live_geodf():
     #firstly get the geopandas with regions, to be completed with live data
-    geojson_filename = "uk_dno_regions_2024.geojson"
+    geojson_filename = geo_file_prod
     filepath = os.path.join(path_to_geodata, geojson_filename)
 
     print("loading uk energy regions from file", filepath)
     uk_regions = gpd.read_file(filepath)
 
     #get the live data
-    uk_live_df = get_api_regions_as_df()
+    uk_live_df = get_api_carbon_regions_as_df()
 
     cols_to_drop = ["Name", "DNO","DNO_Full", "id", "api_name", "dno_region"]
 
@@ -149,6 +165,6 @@ def geo_test_file():
     return regional_filepath
 
 if __name__ == "__main__":
-    # process_local_geojson()
+    process_local_geojson(filename_out = geo_file_prod)
     # geo_plot_matplotlib_save_local()
     pass
