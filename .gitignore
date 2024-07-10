@@ -16,5 +16,3 @@ data/*.json
 data/geo/*.geojson
 *.csv
 
-#will remove on another branch
-notebooks/

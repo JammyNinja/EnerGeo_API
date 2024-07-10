@@ -60,3 +60,9 @@ setup_project:
 refresh_requirements:
 	pip freeze | xargs pip uninstall -y
 	pip install -r requirements.txt
+
+git_commands:
+# delete local branches that are tracking remote ones
+	git fetch origin --prune
+#delete remote branch
+	git push -d origin <branch-name>
