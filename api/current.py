@@ -1,8 +1,14 @@
 import pandas as pd
 from datetime import datetime
 import pytz #for timezones
-
+import requests
 from api.elements import elements_list, element_mappings
+
+def call_api_current_generation():
+    url = "https://data.elexon.co.uk/bmrs/api/v1/generation/actual/per-type/day-total?format=json"
+    print("requesting current energy generation for the UK\nurl:", url)
+    response = requests.get(url)
+    return response
 
 def response_to_df(response):
     """ convert API response to dataframe"""
@@ -77,10 +83,25 @@ def build_output_dict(response_df):
     out_dict["elements"] = elements_dicts_out
     return out_dict
 
-#called from api/fast.py
 def get_current_data_as_elements(response):
 
     response_df = response_to_df(response)
     output_as_dict = build_output_dict(response_df)
 
     return output_as_dict
+
+#called from api/fast.py
+def current_energy_generation():
+    """
+        query the elexon API
+        returns dictionary specially formatted for front-end display
+    """
+    response = call_api_current_generation()
+
+    if response.status_code == 200: #use '200' to simulate it going down
+        print("Getting current cardbon intensity data from the url")
+        output = get_current_data_as_elements(response.json())
+    else:
+        output = f"Elexon API did not respond with code 200.\nResponse code was: {response.status_code}\n response.content: {response.content}"
+
+    return output
