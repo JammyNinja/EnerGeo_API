@@ -158,10 +158,12 @@ def geo_plot_matplotlib_save_local(filename_out = "carbon_intensity_regional.png
 
     return out_path
 
-def geo_test_file():
+def geo_static_image():
+    """Generate and save an image
+    returns filepath of that image for API to serve
+    """
     print("generating regional plot")
     regional_filepath = geo_plot_matplotlib_save_local()
-
     return regional_filepath
 
 if __name__ == "__main__":
