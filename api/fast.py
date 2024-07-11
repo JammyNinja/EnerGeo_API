@@ -8,7 +8,9 @@ from fastapi.responses import FileResponse #returning regional image
 
 from api.current import get_current_data_as_elements
 from api.historical import get_historical_output
-from api.geo import geo_test_file, carbon_intensity_live_geodict
+from api.geo import geo_test_image
+from api.geo import geo_all_regional_live_geodict
+from api.geo import solar_generation_live_geodict, carbon_intensity_live_geodict
 
 app = FastAPI()
 
@@ -27,6 +29,11 @@ path_to_data = os.path.join(this_folder, "..", "data")
 @app.get('/')
 def index():
     return {'ok': True, "docs to see endpoints" : "/docs"}
+
+@app.get('/test')
+def try_args(user_input):
+    return {'input_was' : user_input}
+
 
 @app.get('/current')
 def get_current():
@@ -52,13 +59,32 @@ def get_historical():
 
 @app.get('/geo/image_static')
 async def geo_test():
-    geo_filepath = geo_test_file()
+    geo_filepath = geo_test_image()
     print("serving regional carbon intensity data from local", geo_filepath)
     return FileResponse(geo_filepath)
 
+#delete endpoint once front end updated
 @app.get('/geo/carbon_intensity_geojson')
 def geo_carbon_as_geo_dict():
     return carbon_intensity_live_geodict()
+
+@app.get('/geo/regional/all')
+def get_all_regional_data():
+    return geo_all_regional_live_geodict()
+
+@app.get('/geo/regional/carbon_intensity')
+def get_geo_carbon_data_only():
+    return carbon_intensity_live_geodict()
+
+@app.get('/geo/regional/solar_generation')
+def get_geo_solar_data_only():
+    return solar_generation_live_geodict()
+
+@app.get('/geo/get_core_geojson')
+def serve_local_geo():
+    from api.geo import local_geo_filepath
+    print("serving local geojson")
+    return FileResponse(local_geo_filepath)
 
 def cache_locally():
     """code to save locally, untested for compatibility with other functions"""
