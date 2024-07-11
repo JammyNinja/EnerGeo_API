@@ -5,12 +5,12 @@ elements_list = ["fire", "water", "earth", "air"]
 element_mappings = {
     #fire
     "BIOMASS" : "fire",
-    "FOSSIL OIL" : "fire", # was earth
-    "FOSSIL HARD COAL" : "fire", #was earth
-    "FOSSIL GAS" : "fire", #was earth
+    "FOSSIL OIL" : "fire",
+    "FOSSIL HARD COAL" : "fire",
+    "FOSSIL GAS" : "fire",
     #earth
-    "NUCLEAR" : "earth", #was fire
-    "SOLAR" : "earth", # was fire
+    "NUCLEAR" : "earth",
+    "SOLAR" : "earth",
     #water
     "HYDRO PUMPED STORAGE" : "water",
     "HYDRO RUN-OF-RIVER AND POUNDAGE" : "water",
