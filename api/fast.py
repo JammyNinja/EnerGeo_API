@@ -1,4 +1,4 @@
-import requests
+# import requests
 import json
 import os
 import pandas as pd
@@ -6,11 +6,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse #returning regional image
 
-from api.current import get_current_data_as_elements
+from api.current import current_energy_generation
 from api.historical import get_historical_output
-from api.geo import geo_test_image
-from api.geo import geo_all_regional_live_geodict
+
+from api.geo import geo_static_image
 from api.geo import solar_generation_live_geodict, carbon_intensity_live_geodict
+from api.geo import geo_all_regional_live_geodict
 
 app = FastAPI()
 
@@ -36,37 +37,18 @@ def try_args(user_input):
 
 
 @app.get('/current')
-def get_current():
-    """
-        query the elexon API
-        returns dictionary specially formatted for front-end display
-    """
-    url = "https://data.elexon.co.uk/bmrs/api/v1/generation/actual/per-type/day-total?format=json"
-    print("requesting url:", url)
-    response = requests.get(url)
-
-    if response.status_code == 200: #use '200' to simulate it going down
-        print("Getting current cardbon intensity data from the url")
-        output = get_current_data_as_elements(response.json())
-    else:
-        output = f"""Elexon API did not respond with code 200.\nResponse code was: {response.status_code}\nurl: {url}""".split('\n')
-
-    return output
+def get_current_generation_output():
+    return current_energy_generation()
 
 @app.get('/historical')
 def get_historical():
     return get_historical_output()
 
 @app.get('/geo/image_static')
-async def geo_test():
-    geo_filepath = geo_test_image()
-    print("serving regional carbon intensity data from local", geo_filepath)
+async def geo_get_static_image():
+    geo_filepath = geo_static_image()
+    print("serving regional carbon intensity data as image stored at", geo_filepath)
     return FileResponse(geo_filepath)
-
-#delete endpoint once front end updated
-@app.get('/geo/carbon_intensity_geojson')
-def geo_carbon_as_geo_dict():
-    return carbon_intensity_live_geodict()
 
 @app.get('/geo/regional/all')
 def get_all_regional_data():

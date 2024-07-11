@@ -10,13 +10,12 @@ import matplotlib.pyplot as plt
 
 carbon_intensity_url = "https://api.carbonintensity.org.uk/regional"
 solar_generation_url = "https://api.solar.sheffield.ac.uk/pvlive/api/v4/pes/14"
-path_to_geodata = os.path.join(os.path.dirname(__file__), "..", "data", "geo")
 
+path_to_geodata = os.path.join(os.path.dirname(__file__), "..", "data", "geo")
 local_geo_filename = "uk_dno_regions_2024_lonlat.geojson"
 local_geo_filepath = os.path.join(path_to_geodata, local_geo_filename)
 
 #process base geojson
-
 #used to programmatically map geojson region_ids to API region ids
 #now all ids/mapping stored in there. All future data to be joined to this.
 def process_local_geojson(filename_out, filename_in = "national_grid_dno_regions_2024.geojson"):
@@ -37,6 +36,7 @@ def process_local_geojson(filename_out, filename_in = "national_grid_dno_regions
     uk_regions_2024["Area"] = uk_regions_2024["Area"].map(lambda x: rename_geojson_areas_to_api.get(x,x) )
 
     #get sample api response to lineup the ids
+    print("calling carbon intensity api for sample region ids")
     region_response_df = carbon_intensity_live_df()
 
     #line up the ids from file + api
@@ -146,56 +146,6 @@ def carbon_intensity_live_df():
 
     return regions_df
 
-# def solar_generation_live_df(solar_regions_list, extra_fields=True, printing=True):
-#     """
-#         Calls an api endpoint per region in solar_regions_list (14 regions)
-#         solar regions should correspond to those listed at:
-#         https://api.solar.sheffield.ac.uk/pvlive/api/v4/pes_list
-#     """
-#     base_url = f"https://api.solar.sheffield.ac.uk/pvlive/api/v4/pes/" #/4 for region_id 4
-
-#     #extra fields ctrl-f: Aggregated by PES region
-#     #doc: https://docs.google.com/document/d/e/2PACX-1vSDFb-6dJ2kIFZnsl-pBQvcH4inNQCA4lYL9cwo80bEHQeTK8fONLOgDf6Wm4ze_fxonqK3EVBVoAIz/pub
-#     extra_fields = ",".join([
-#         "bias_error", #estimate of Mean Normalised Bias Error
-#         "capacity_mwp", # estimate of total effective capacity
-#         "installedcapacity_mwp", #estimate of installed capacity Megawatt peak
-#         "lcl_mw", #lower confidence limit 90%
-#         "stats_error", #estimate of Mean Absolute Percent Error
-#         "ucl_mw", #upper cofidence limit (90%)
-#         "uncertainty_MW", #estimate of RMSE * effective capacity
-#         "site_count", #number of sites
-#         "updated_gmt", #latest update time of estimate
-#     ])
-#     if printing:
-#         print(f"Fetching solar API regional data from base url: {base_url}<region_id>")
-#         print("Extra fields:\n- ", "\n- ".join(extra_fields.split(',')) )
-#         print("Sample API url: ", f"{base_url}{solar_regions_list.iloc[0]}?extra_fields={extra_fields}")
-#         print(f"Fetching {len(solar_regions_list)} solar regions...")
-
-#     regions_solar_data = []
-#     for api_region_id in  solar_regions_list:
-#         region_url = base_url + str(api_region_id) + f"?extra_fields={extra_fields}"
-#         if printing:
-#             print(f"Fetching live solar data for pes region:", api_region_id)
-#         response=requests.get(region_url)
-
-#         if response.status_code == 200:
-#             region_data = response.json()
-#             region_dict = {k:v for k,v in zip(region_data['meta'], region_data['data'][0])}
-#             regions_solar_data.append(region_dict)
-#         else:
-#             print("response not 200!", response.content)
-
-#     solar_live_data_df = pd.DataFrame(regions_solar_data)
-
-#     cols_rename = {
-#         "datetime_gmt" : "solar_datetime_gmt",
-#         "pes_id" : "solar_region_id",
-#         "updated_gmt" : "solar_last_updated_gmt"
-#     }
-
-#     return solar_live_data_df.rename(columns=cols_rename)
 def solar_generation_live_df(solar_regions_list, extra_fields=True, printing=True):
     """
         Calls an api endpoint per region in solar_regions_list (14 regions)
@@ -279,6 +229,7 @@ def get_solar_generation_live_only():
                       left_on="pes_id", right_on="solar_region_id")
     return out_df
 
+
 def get_carbon_and_solar_regional_data():
     uk_energy_regions_df = get_regional_geojson()
     solar_regions_list = uk_energy_regions_df.sort_values(by="pes_id")["pes_id"]
@@ -292,18 +243,17 @@ def get_carbon_and_solar_regional_data():
     #choose columns
     return all_df
 
+
 #api entrypoint
 def carbon_intensity_live_geodict():
     carbon_geo_df = get_carbon_intensity_live_only()
     print("Returning carbon data as geodict")
     return carbon_geo_df.to_geo_dict(drop_id=True)
-
 #api entrypoint
 def solar_generation_live_geodict():
     solar_geo_df = get_solar_generation_live_only()
     print("Returning solar data as geodict")
     return solar_geo_df.to_geo_dict(drop_id=True)
-
 #api entrypoint
 def geo_all_regional_live_geodict():
     #add more if/when
@@ -315,7 +265,7 @@ def geo_plot_matplotlib_save_local(filename_out = "carbon_intensity_regional.png
         Fetch live carbon intensity data and plot. save locally in data/output folder
     """
 
-    carbon_regions = carbon_intensity_live_geodict()
+    carbon_regions = get_carbon_intensity_live_only()
 
     fig, ax = plt.subplots(figsize=(6,10))
     ax.axis('off')
@@ -331,10 +281,12 @@ def geo_plot_matplotlib_save_local(filename_out = "carbon_intensity_regional.png
     return out_path
 
 #api entrypoint
-def geo_test_image():
+def geo_static_image():
+    """Generate and save an image
+    returns filepath of that image for API to serve
+    """
     print("Generating regional plot")
     regional_filepath = geo_plot_matplotlib_save_local()
-
     return regional_filepath
 
 if __name__ == "__main__":
