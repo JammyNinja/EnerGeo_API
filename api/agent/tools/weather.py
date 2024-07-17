@@ -25,6 +25,7 @@ def get_weather(location: str) -> str:
         "http://api.weatherapi.com/v1/current.json", params=API_params
     )
     str_response: str = dumps(response.json())
+    print("weather api response:\n", str_response)
     return str_response
 
 
