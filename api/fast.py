@@ -2,6 +2,8 @@
 import json
 import os
 import pandas as pd
+import time #for deleting old images
+from pprint import pprint
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,6 +33,7 @@ app.add_middleware(
 
 this_folder = os.path.dirname(__file__)
 path_to_data = os.path.join(this_folder, "..", "data")
+path_to_agent_images = os.path.join(this_folder, "agent", "images")
 
 # Define a root `/` endpoint
 @app.get('/')
@@ -38,16 +41,67 @@ def index():
     return {'ok': True, "docs to see endpoints" : "/docs"}
 
 @app.get('/test')
-def try_args(user_input):
+async def try_args(user_input):
     print("Calling weather app with user input: ", user_input)
-    prompt = f"""Get me the url of an image of the weather conditions in {user_input}"""
+    prompt = f"""
+        Gernerate an image of the current weather conditions in {user_input}.
+        Please output a JSON style object with the following keys:
+            "image_url", "image_path"
+        Make sure they are sourrounded by curly braces.
+    """
 
     agent_output = call_weather_app(prompt)
-    print("agent output:", agent_output)
+    # print("agent output:", agent_output)
 
-    image_url = agent_output.split('(')[1].split(')')[0]
-    print("extracted url", image_url)
-    return {'extracted url' : image_url}
+    api_output = process_agent_output(agent_output)
+
+    #handle obsolete images
+    delete_surplus_images()
+
+    #api_output is dict with image_url and image_path
+    #return api_output
+    return FileResponse(api_output["image_path"])
+
+def process_agent_output(agent_output):
+    """extract the relevant dictionary from string by grabbing curly braces"""
+    print("original agent output", agent_output)
+    agent_dict_out = '{'+ agent_output.split('}')[0].split('{')[1] + '}'
+
+    print("extracted dictionary from agent:", agent_dict_out)
+#     print(type(agent_dict_out))
+    out_dict = json.loads(agent_dict_out.replace("'", '"'))
+
+    return out_dict
+
+def delete_surplus_images(limit=5):
+    """
+        keeps 5 most recent images
+    """
+
+    #define image directory defined at top of file
+    # current_time = time.time()
+    all_image_files = []
+
+    for image_name in os.listdir(path_to_agent_images):
+        # print(image_name)
+        image_path = os.path.join(path_to_agent_images, image_name)
+        all_image_files.append(image_path)
+
+    # Sort them by modification time (most recent first)
+    sorted_images = sorted(all_image_files, key=os.path.getmtime, reverse=True)
+    # print(sorted_images)
+
+    for img_path in sorted_images[limit:]:
+        try:
+            os.remove(img_path)
+            print(f"Deleted: {os.path.basename(img_path)}")
+        except Exception as e:
+            print(f"Error deleting {os.path.basename(img_path)}: {e}")
+
+    # pprint(f"Kept files: {''.join(sorted_images[:5])}")
+    print("kept files:")
+    pprint(sorted_images[:limit])
+
 
 @app.get('/current')
 def get_current_generation_output():
@@ -99,4 +153,4 @@ if __name__ == "__main__":
     # query_elexon_api()
     # geo_test()
     # print(get_current())
-    pass
+    delete_old_images()
