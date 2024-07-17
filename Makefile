@@ -59,6 +59,7 @@ setup_project:
 refresh_requirements:
 	pip freeze | xargs pip uninstall -y
 	pip install -r requirements.txt
+	pip install --upgrade pip
 
 git_commands:
 # delete local branches that are tracking remote ones
