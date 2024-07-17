@@ -13,6 +13,11 @@ from api.geo import geo_static_image
 from api.geo import solar_generation_live_geodict, carbon_intensity_live_geodict
 from api.geo import geo_all_regional_live_geodict
 
+#from api.agent.setup_environment import set_environment_variables
+from api.agent.simple_langgraph import test_import, call_weather_app
+
+# set_environment_variables("LangGraph Basics")
+
 app = FastAPI()
 
 app.add_middleware(
@@ -33,8 +38,15 @@ def index():
 
 @app.get('/test')
 def try_args(user_input):
-    return {'input_was' : user_input}
+    print("Calling weather app with user input: ", user_input)
+    prompt = f"""Get me the url of an image of the weather conditions in {user_input}"""
 
+    agent_output = call_weather_app(prompt)
+    print("agent output:", agent_output)
+
+    image_url = agent_output.split('(')[1].split(')')[0]
+    print("extracted url", image_url)
+    return {'extracted url' : image_url}
 
 @app.get('/current')
 def get_current_generation_output():
