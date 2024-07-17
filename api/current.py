@@ -85,6 +85,7 @@ def build_output_dict(response_df):
 
 def get_current_data_as_elements(response):
 
+    #api call?
     response_df = response_to_df(response)
     output_as_dict = build_output_dict(response_df)
 
