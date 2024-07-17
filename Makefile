@@ -1,43 +1,43 @@
-run_api_uvicorn :
+run_api_uvicorn:
 	@echo Docs link here: http://localhost:$(MY_PORT)/docs
 	uvicorn api.fast:app --port $(MY_PORT) --reload
 
-docker_build_local_image :
+docker_build_local_image:
 	docker build -t energy:$(DOCKER_LOCAL_TAG) .
 
 #laptop_port : container_port
-run_api_docker :
+run_api_docker:
 	@echo running from local docker image
 	@echo "open http://localhost:$(MY_PORT)/ in browser to see"
 	docker run -it --env-file .env -p $(MY_PORT):$(PORT) energy:$(DOCKER_LOCAL_TAG)
 
 #inspect running image
-docker_local_shell :
-	docker run -it --env-file .env -p energy:$(DOCKER_LOCAL_TAG) sh
+docker_local_shell:
+	docker run -it --env-file .env -p $(MY_PORT):$(PORT) energy:$(DOCKER_LOCAL_TAG) sh
 
 #**FOR USE WITHIN CONTAINER!**
-run_cmd :
+run_cmd:
 	uvicorn api.fast:app --host 0.0.0.0 --port $(PORT)
 
 #	0 - create repo
-deploy_create_repo :
+deploy_create_repo:
 	gcloud artifacts repositories create $(DOCKER_REPO_NAME) --repository-format=docker --location=$(GCP_REGION) --description="$(DOCKER_REPO_DESCRIPTION)" --project=$(GCP_PROJECT_ID)
 
 # 1 - build image for that repo
-deploy_build_image :
+deploy_build_image:
 	docker build -t $(IMAGE_URI) .
 
 # 2 - test it first
-deploy_test_image :
+deploy_test_image:
 	@echo "http://localhost:$(MY_PORT)/docs try the endpoints to test"
 	docker run -it --env-file .env -p $(MY_PORT):$(PORT) $(IMAGE_URI)
 
 # 3 - push that image onto the repo (image name contains repo)
-deploy_push_image :
+deploy_push_image:
 	docker push $(IMAGE_URI)
 
 # 4 - make google serve it
-deploy_run_image :
+deploy_run_image:
 	gcloud run deploy --image $(IMAGE_URI) --region $(GCP_REGION)
 
 #see running services
