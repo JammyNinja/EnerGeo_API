@@ -70,7 +70,7 @@ def call_weather_app(query: str):
     result = output.get("agent_outcome").return_values["output"]  # type: ignore
     steps = output.get("intermediate_steps")
 
-    print(f"{Fore.BLUE}Result: {result}{Style.RESET_ALL}")
+    print(f"{Fore.BLUE}Result: {result}{Style.RESET_ALL}\n")
     print(f"{Fore.YELLOW}Steps: {steps}{Style.RESET_ALL}")
 
     return result
