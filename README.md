@@ -9,40 +9,34 @@ Currently EnerGeo offers visualizations of historical consumption levels in the 
 
 1. [Local installation](#Local-Installation)
 2. [Key Features / Endpoints](#key-features/endpoints)
-3. [Technologies Used](#technologies-used)
-4. [Data Sources](#data-sources)
-5. [Team](#team--contributers)
-6. [Acknowledgements](#acknowledgements)
-7. [Front End Repo](https://energeo.dev/)
-
-
-
+3. [How we did it](#how-we-did-it)
+4. [Technologies Used](#technologies-used)
+5. [Data Sources](#data-sources)
+6. [Team](#team--contributers)
+7. [Acknowledgements](#acknowledgements)
+8. [Front End](#front-end)
 
 ## Local installation
-Please see below how to run the api locally on your machine. The API is deployed on Google Cloud Run, and is run in a Docker container. To run the /agent endpoint you will need to use your API keys for both OpenAI's API and weather API.
+Please see below how to run the api locally on your machine. The API is deployed on Google Cloud Run, and is run in a Docker container. To run the /agent endpoint you will need to use/generate your own API keys for both OpenAI's API and weather API.
+To run this backend on your machine, clone the repo and run ```make install_energeo``` - but NOT YET, this command is still in progress....
 
 ## Key Features/endpoints
-  - ```/agent``` returns DALLE image created with prompt using a location and the current weather data at that location
+  - ```/agent``` returns jpg image created with DALLE, prompted with a location and the current weather data at that location
   - ```/current``` returns JSON with the 30min and 24hr energy generation data, broken down by element
-  - ```/geo/regional/carbon_intensity``` returns geoJSON with properties including carbon intensity for the 14 UK energy regions
+  - ```/geo/regional/carbon_intensity``` returns GeoJSON with properties including carbon intensity for the 14 UK energy regions
   - ```/geo/image_static``` returns image with current carbon intensity values by UK energy region, by matplotlib
-  - ```/geo/regional/solar_generation``` returns geoJSON with properties including solar output forecast by Uni of Sheffield
-  - ```/geo/regional/all``` returns geoJSON with carbon and solar properties
+  - ```/geo/regional/solar_generation``` returns GeoJSON with properties including solar output forecast by Uni of Sheffield
+  - ```/geo/regional/all``` returns GeoJSON with carbon and solar properties
   - ```/historical``` returns JSON with the yearly energy generation, also broken down by element
 
+## How we did it
+Using Python, we built a FastAPI using Uvicorn, which is deployed with Google Cloud Run, the Docker image is stored on Google Artifacts Registry. We get live data from multiple APIs (see [Data Sources](#data-sources) below), and integrate the results with a stored GeoJSON file detailing the UK's 14 major energy regions, using GeoPandas.
+Our RAG agent, EnerGenius, is built with Langchain... GPT-4mini + DALLE3
 
 ## Technologies Used
-Using Python, we built a FastAPI using Uvicorn, which is deployed on Google cloud run in a Docker image.
-We call multiple APIs (see Data Sources below) and assembled the responses with Pandas.
 
-MORE STORY ON HOW WE DID IT
+![openAI](https://img.shields.io/badge/OpenAI-1c3c3c?style=for-the-badge&logo=openai) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) ![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)  ![GeoPandas](https://img.shields.io/badge/GeoPandas-black?style=for-the-badge&logo=GeoPandas) ![LangChain](https://img.shields.io/badge/Langchain-1c3c3c?style=for-the-badge&logo=Langchain)  ![Google Cloud](https://img.shields.io/badge/GoogleCloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white) ![Matplotlib](https://img.shields.io/badge/Matplotlib-%23ffffff.svg?style=for-the-badge&logo=Matplotlib&logoColor=black) ![GeoJSON](https://img.shields.io/badge/GeoJSON-5A5A5A?style=for-the-badge&logo=geojson&logoColor=white)
 
-![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) ![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)  ![GeoPandas](https://img.shields.io/badge/GeoPandas-black?style=for-the-badge&logo=GeoPandas) ![LangChain](https://img.shields.io/badge/Langchain-1c3c3c?style=for-the-badge&logo=Langchain) ![openAI](https://img.shields.io/badge/OpenAI-1c3c3c?style=for-the-badge&logo=openai) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![Google Cloud](https://img.shields.io/badge/GoogleCloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white) ![Matplotlib](https://img.shields.io/badge/Matplotlib-%23ffffff.svg?style=for-the-badge&logo=Matplotlib&logoColor=black) ![GeoJSON](https://img.shields.io/badge/GeoJSON-5A5A5A?style=for-the-badge&logo=geojson&logoColor=white)
-
-- ChatGPT 4mini
-- DALLE 3
-- Weather API
--
 
 ## Data sources
 
@@ -64,8 +58,7 @@ We use solar energy generation forecast data provided by [University of Sheffiel
 - [API endpoint for national solar output](https://api.solar.sheffield.ac.uk/pvlive/api/v4/pes/0)
 
 #### Weather Data
-We query [free weather API](https://www.weatherapi.com/) for current weather data in a specified location
-
+We query a free [weather API](https://www.weatherapi.com/) for current weather data in a specified location.
 
 ### Static data
 #### Historic energy generation data
@@ -74,23 +67,24 @@ We downloaded a publicly available file from National Grid ESO's [data portal](h
 - [Historical data file download](https://api.nationalgrideso.com/dataset/88313ae5-94e4-4ddc-a790-593554d8c6b9/resource/f93d1835-75bc-43e5-84ad-12472b180a98/download/df_fuel_ckan.csv)
 
 #### UK Energy Regions
-Also from national grid data portal is a geoJSON file that contains the coordinates of UK regions. We use regions current at May 2024.
+Also from national grid data portal is a GeoJSON file that contains the coordinates of UK regions. We use regions current at May 2024.
  - [Region boundaries page](https://www.nationalgrideso.com/data-portal/gis-boundaries-gb-dno-license-areas)
  - [GeoJSON file download](https://api.nationalgrideso.com/dataset/0e377f16-95e9-4c15-a1fc-49e06a39cfa0/resource/1c6a7dc0-1b6c-443a-bc67-5f7125649434/download/gb-dno-license-areas-20240503-as-geojson.geojson)
 
 ## Team / Contributers
 
-- Frontend Engineer:
-  - [Priscila Finkler Innocente](https://github.com/prifinkler)
-
 - Data Scientists:
   - [Aryavachin Márquez Briceño](https://github.com/cipobt)
   - [Louis Auger](https://github.com/JammyNinja)
 
+- Frontend Engineer:
+  - [Priscila Finkler Innocente](https://github.com/prifinkler)
+
 ## Acknowledgements
 - [Andrew Crossland, PhD](https://linkedin.com/in/afcrossland/) inspired our project with his real-time web-based tool, mygridgb.co.uk, and offered us constant support and encouragement throughout the hackathon.
-- [Anna Putt](https://linkedin.com/in/anna-putt/) for organizing the MentorMe initiative and its first hackathon, "Earth, Fire, Air, Water - Where Does Our Energy Come From?", and Ben Fairbairn(https://linkedin.com/in/benfairbairn/) for coming up with the theme. We had the honour of winning the hackathon with this project!
+- [Anna Putt](https://linkedin.com/in/anna-putt/) for organizing the MentorMe initiative and its first hackathon, "Earth, Fire, Air, Water - Where Does Our Energy Come From?", and [Ben Fairbairn](https://linkedin.com/in/benfairbairn/) for coming up with the theme. We had the honour of winning the hackathon with this project!
 - [Le Wagon - London](https://www.lewagon.com/london) trained us and provided an excellent co-working space in the heart of London for the duration of the hackathon.
 
 ## Front End
-The front end of the application is on this [GitHub Repo](https://github.com/prifinkler/energeo)
+The front end of the application is [here](https://github.com/prifinkler/energeo).
+The live website is [here](https://energeo.dev).
