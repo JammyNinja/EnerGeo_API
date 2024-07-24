@@ -1,7 +1,7 @@
 # EnerGeo
 
 ## Introduction
-Welcome to the backend of EnerGeo, a React-based web application designed to visualize real-time energy sourcing and environmental impact data. Our goal is to promote sustainable practices and raise awareness through interactive graphs and images. EnerGeo was developed during a hackathon themed "Earth, Fire, Air, Water - Where does our energy come from?"
+Welcome to the backend of [EnerGeo](energeo.dev), a React-based web application designed to visualize real-time energy sourcing and environmental impact data. Our goal is to promote sustainable practices and raise awareness through interactive graphs and images. EnerGeo was developed during a hackathon themed "Earth, Fire, Air, Water - Where does our energy come from?"
 By integrating MLOps, Cloud, and AI technologies, EnerGeo channels data from various APIs and leverages advanced LLM-based technologies. We aspire to provide users with a comprehensive tool that facilitates a direct and easier understanding of the environmental impact of energy sources, and our unique take is classifying them into the four aforementioned elements.
 Currently EnerGeo offers visualizations of historical consumption levels in the UK (last 30 minutes and last 24 hours) and features an AI image generator that provides real-time visualizations of weather conditions in any location around the world.
 
@@ -13,6 +13,7 @@ Currently EnerGeo offers visualizations of historical consumption levels in the 
 4. [Data Sources](#data-sources)
 5. [Team](#team--contributers)
 6. [Acknowledgements](#acknowledgements)
+7. [Front End Repo](https://energeo.dev/)
 
 
 
@@ -88,5 +89,8 @@ Also from national grid data portal is a geoJSON file that contains the coordina
 
 ## Acknowledgements
 - [Andrew Crossland, PhD](https://linkedin.com/in/afcrossland/) inspired our project with his real-time web-based tool, mygridgb.co.uk, and offered us constant support and encouragement throughout the hackathon.
-- [Anna Putt](https://linkedin.com/in/anna-putt/) for organizing the MentorMe initiative and its first hackathon, "Earth, Fire, Air, Water - Where Does Our Energy Come From?", and Ben Fairbairn (https://linkedin.com/in/benfairbairn/) for coming up with the theme. We had the honour of winning the hackathon with this project!
+- [Anna Putt](https://linkedin.com/in/anna-putt/) for organizing the MentorMe initiative and its first hackathon, "Earth, Fire, Air, Water - Where Does Our Energy Come From?", and Ben Fairbairn(https://linkedin.com/in/benfairbairn/) for coming up with the theme. We had the honour of winning the hackathon with this project!
 - [Le Wagon - London](https://www.lewagon.com/london) trained us and provided an excellent co-working space in the heart of London for the duration of the hackathon.
+
+## Front End
+The front end of the application is on this [GitHub Repo](https://github.com/prifinkler/energeo)
