@@ -44,7 +44,8 @@ def index():
 async def try_args(user_input):
     print("Calling weather app with user input: ", user_input)
     prompt = f"""
-        Gernerate an image of the current weather conditions in {user_input}.
+        Generate a realistic image of the current weather conditions
+        in {user_input} with temperature legend in Celsius.
         Please output a JSON style object with the following keys:
             "image_url", "image_path"
         Make sure they are sourrounded by curly braces.

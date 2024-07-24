@@ -17,7 +17,7 @@ from api.agent.tools import generate_image, get_weather #, get_image_url
 
 set_environment_variables("LangGraph Basics")
 
-LLM = ChatOpenAI(model="gpt-3.5-turbo-0125", streaming=True)
+LLM = ChatOpenAI(model="gpt-4o-mini", streaming=True)
 TOOLS = [get_weather, generate_image] #, get_image_url]
 PROMPT = hub.pull("hwchase17/openai-functions-agent")
 
